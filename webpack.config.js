@@ -9,6 +9,7 @@ const CSS_DEST = path.resolve(__dirname, 'web-app/css');
 const GRAILS_VIEWS = path.resolve(__dirname, 'grails-app/views');
 const COMMON_VIEW = path.resolve(GRAILS_VIEWS, 'common');
 const RECEIVING_VIEW = path.resolve(GRAILS_VIEWS, 'partialReceiving');
+const STOCKLIST_VIEW = path.resolve(GRAILS_VIEWS, 'requisitionTemplate');
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const OptimizeCSSAssetsPlugin = require('optimize-css-assets-webpack-plugin');
@@ -18,10 +19,11 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
   entry: {
     app: `${SRC}/index.jsx`,
+    emailModal: `${SRC}/email.jsx`
   },
   output: {
     path: DEST,
-    filename: 'js/bundle.[hash].js',
+    filename: 'js/bundle.[hash].[name].js',
     chunkFilename: 'js/bundle.[hash].[name].js',
     publicPath: '/openboxes/',
   },
@@ -30,7 +32,7 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/bundle.[hash].css',
+      filename: 'css/bundle.[hash].[name].css',
       chunkFilename: 'css/bundle.[hash].[name].css',
     }),
     new OptimizeCSSAssetsPlugin({}),
@@ -40,8 +42,8 @@ module.exports = {
       template: `${ASSETS}/grails-template.html`,
       inject: false,
       templateParameters: compilation => ({
-        jsSource: `\${createLinkTo(dir:'/js', file:'bundle.${compilation.hash}.js')}`,
-        cssSource: `\${createLinkTo(dir:'css/', file:'bundle.${compilation.hash}.css')}`,
+        jsSource: `\${createLinkTo(dir:'/js', file:'bundle.${compilation.hash}.app.js')}`,
+        cssSource: `\${createLinkTo(dir:'css/', file:'bundle.${compilation.hash}.app.css')}`,
         receivingIfStatement: '',
       }),
     }),
@@ -50,13 +52,22 @@ module.exports = {
       template: `${ASSETS}/grails-template.html`,
       inject: false,
       templateParameters: compilation => ({
-        jsSource: `\${createLinkTo(dir:'/js', file:'bundle.${compilation.hash}.js')}`,
-        cssSource: `\${createLinkTo(dir:'css/', file:'bundle.${compilation.hash}.css')}`,
+        jsSource: `\${createLinkTo(dir:'/js', file:'bundle.${compilation.hash}.app.js')}`,
+        cssSource: `\${createLinkTo(dir:'css/', file:'bundle.${compilation.hash}.app.css')}`,
         receivingIfStatement:
           // eslint-disable-next-line no-template-curly-in-string
           '<g:if test="${!params.id}">' +
           'You can access the Partial Receiving feature through the details page for an inbound shipment.' +
           '</g:if>',
+      }),
+    }),
+    new HtmlWebpackPlugin({
+      filename: `${STOCKLIST_VIEW}/_emailModal.gsp`,
+      template: `${ASSETS}/email-modal.html`,
+      inject: false,
+      templateParameters: compilation => ({
+        jsSource: `\${createLinkTo(dir:'/js', file:'bundle.${compilation.hash}.emailModal.js')}`,
+        cssSource: `\${createLinkTo(dir:'css/', file:'bundle.${compilation.hash}.emailModal.css')}`,
       }),
     }),
   ],

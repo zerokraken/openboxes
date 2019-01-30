@@ -2,6 +2,7 @@ import _ from 'lodash';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 
 import ModalWrapper from '../form-elements/ModalWrapper';
 import TextField from '../form-elements/TextField';
@@ -107,7 +108,7 @@ class EmailModal extends Component {
   }
 }
 
-export default connect(null, { showSpinner, hideSpinner })(EmailModal);
+export default withRouter(connect(null, { showSpinner, hideSpinner })(EmailModal));
 
 EmailModal.propTypes = {
   /** Function called when data is loading */
