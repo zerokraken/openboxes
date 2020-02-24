@@ -11,6 +11,7 @@ package org.pih.warehouse.order
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder
 import org.pih.warehouse.core.*
+import org.pih.warehouse.shipping.ShipmentStatusCode
 
 class Order implements Serializable {
 
@@ -27,6 +28,7 @@ class Order implements Serializable {
     Date dateOrdered
     Person completedBy
     Date dateCompleted
+    String displayStatus
 
 
     // Audit fields
@@ -58,6 +60,7 @@ class Order implements Serializable {
         dateCompleted(nullable: true)
         dateCreated(nullable: true)
         lastUpdated(nullable: true)
+        displayStatus(nullable: true)
     }
 
     /**
@@ -67,6 +70,22 @@ class Order implements Serializable {
         return status ?: OrderStatus.PENDING
     }
 
+    /**
+     * Return order status based on shipments
+     *
+     * @return
+     */
+    OrderStatus getDisplayStatus() {
+        if ((listShipments().size() > 0 && listShipments().size() == listShipments().findAll { it.status == ShipmentStatusCode.RECEIVED }.size()) &&
+                (orderItems?.size() > 0 && orderItems?.size() == orderItems?.findAll {it.isCompletelyFulfilled()}?.size())) {
+            return OrderStatus.COMPLETED
+        } else if (listShipments().size() > 0 && listShipments().find { it.status != ShipmentStatusCode.PENDING }) {
+            return OrderStatus.SHIPPING
+        }
+        else {
+            return this.status
+        }
+    }
 
     /**
      * Checks to see if this order has been received, or partially received, and
