@@ -6,12 +6,20 @@ function truncateString(value, length) {
   return (value.length > length) ? `${value.substr(0, length - 1)}...` : value;
 }
 
-const NumberCard = ({ cardTitle, cardNumber, cardSubtitle }) => (
-  <div className="numberCard">
-    <span className="titleCard"> {cardTitle} </span>
-    <span className="resultCard"> {cardNumber.toLocaleString()} </span>
-    <span className="subtitleCard"> {truncateString(cardSubtitle, 22)} </span>
-  </div>
+const NumberCard = ({ cardTitle, cardNumber, cardSubtitle, cardLink }) => (
+  (cardLink ?
+    <a href={cardLink} className="numberCard" disable>
+      <span className="titleCard"> {cardTitle} </span>
+      <span className="resultCard"> {cardNumber.toLocaleString()} </span>
+      <span className="subtitleCard"> {truncateString(cardSubtitle, 22)} </span>
+    </a>
+    :
+    <div className="numberCard">
+      <span className="titleCard"> {cardTitle} </span>
+      <span className="resultCard"> {cardNumber.toLocaleString()} </span>
+      <span className="subtitleCard"> {truncateString(cardSubtitle, 22)} </span>
+    </div>
+  )
 );
 
 export default NumberCard;

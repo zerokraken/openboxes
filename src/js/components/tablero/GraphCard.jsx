@@ -1,5 +1,3 @@
-/* eslint-disable no-param-reassign */
-/* eslint-disable react/prop-types */
 import PropTypes from 'prop-types';
 import React from 'react';
 import { Line, Bar, Doughnut, HorizontalBar } from 'react-chartjs-2';
@@ -36,22 +34,32 @@ const DragHandle = sortableHandle(() => (
 ));
 
 let graphClass = 'graphCard';
-const GraphCard = SortableElement(({ cardTitle, cardType, data }) => {
+const GraphCard = SortableElement(({ cardId, cardTitle, cardType, cardLink, data, reloadIndicator }) => {
   let graph;
+  const stackedBar = {
+    scales: {
+      xAxes: [{
+        stacked: true
+      }],
+      yAxes: [{
+        stacked: true
+      }]
+    }
+  }
   if (cardType === 'line') {
-    data.datasets = loadColors(data, 'line');
+    data.datasets = loadColors(data, cardId);
     graph = <Line data={data} />;
     graphClass = 'graphCard';
   } else if (cardType === 'bar') {
-    data.datasets = loadColors(data, 'bar');
-    graph = <Bar data={data} />;
+    data.datasets = loadColors(data, cardId);
+    graph = <Bar data={data} options={cardId === 1 ? null : stackedBar} />;
     graphClass = 'graphCard';
   } else if (cardType === 'doughnut') {
-    data.datasets = loadColors(data, 'doughnut');
+    data.datasets = loadColors(data, cardId);
     graph = <Doughnut data={data} />;
     graphClass = 'graphCard';
   } else if (cardType === 'horizontalBar') {
-    data.datasets = loadColors(data, 'horizontalBar');
+    data.datasets = loadColors(data, cardId);
     graph = <HorizontalBar data={data} />;
     graphClass = 'graphCard';
   } else if (cardType === 'numbers') {
@@ -68,10 +76,26 @@ const GraphCard = SortableElement(({ cardTitle, cardType, data }) => {
   return (
     <div className={graphClass}>
       <div className="headerCard">
-        <span className="titleCard"> {cardTitle} </span>
+        {cardLink ?
+          <a href={cardLink} className="titleLink"> {cardTitle} </a>
+          :
+          <span className="titleLink"> {cardTitle} </span>
+        }
         <DragHandle />
       </div>
-      <div className="contentCard">{graph}</div>
+      <div className="contentCard">
+        <div className="dataFilter">
+          <select
+            className="customSelect"
+            onChange={e => reloadIndicator(cardId, "querySize=" + e.target.value)}
+          >
+            <option value="6">Last 6 Months</option>
+            <option value="12">Last Year</option>
+            <option value="24">Last 2 Years</option>
+          </select>
+        </div>
+        {graph}
+      </div>
     </div>
   );
 });
@@ -81,6 +105,5 @@ export default GraphCard;
 GraphCard.propTypes = {
   cardTitle: PropTypes.string.isRequired,
   cardType: PropTypes.string.isRequired,
-  // eslint-disable-next-line react/forbid-prop-types
   data: PropTypes.any.isRequired,
 };

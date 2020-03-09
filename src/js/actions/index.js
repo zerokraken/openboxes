@@ -106,19 +106,40 @@ export function changeCurrentLocale(locale) {
 
 // New Dashboard
 
-function fetchIndicator(indicatorMethod, indicatorType, indicatorTitle, dispatch) {
-  let archived = 0;
-  const id = Math.random();
+function fetchIndicator(id, dispatch, params = null) {
+  const archived = 0;
 
-  const url = "/openboxes/apitablero/" + indicatorMethod;
+  const types = ['line', 'bar', 'horizontalBar', 'bar', 'bar', 'numbers'];
+  const methods = [
+    'getExpirationSummary',
+    'getFillRate',
+    'getInventorySummary',
+    'getSentStockMovements',
+    'getReceivedStockMovements',
+    'getOutgoingStock'
+  ];
+  const titles = [
+    'Expiration Summary',
+    'Fill Rate',
+    'Inventory Summary',
+    'Sent Stock Movements',
+    'Stock Movements Received',
+    'Outgoing Stock Movements'
+  ];
+  const urls = [
+    null, null, null, null, null, null
+  ];
+
+  const url = `/openboxes/apitablero/${methods[id]}?${params}`;
 
   dispatch({
     type: FETCH_INDICATORS,
     payload: {
       id,
-      title: indicatorTitle,
+      title: titles[id],
       type: 'loading',
       data: [],
+      link: urls[id],
       archived,
     },
   });
@@ -128,9 +149,10 @@ function fetchIndicator(indicatorMethod, indicatorType, indicatorTitle, dispatch
       type: FETCH_INDICATORS,
       payload: {
         id,
-        title: indicatorTitle,
-        type: indicatorType,
+        title: titles[id],
+        type: types[id],
         data: res.data,
+        link: urls[id],
         archived,
       },
     });
@@ -139,23 +161,27 @@ function fetchIndicator(indicatorMethod, indicatorType, indicatorTitle, dispatch
       type: FETCH_INDICATORS,
       payload: {
         id,
-        title: indicatorTitle,
+        title: titles[id],
         type: 'error',
         data: [],
+        link: urls[id],
         archived,
       },
     });
   });
 }
 
+export function reloadIndicator(id, params) {
+  return (dispatch) => {
+    fetchIndicator(id, dispatch, params);
+  };
+}
+
 export function fetchIndicators() {
   return (dispatch) => {
-    fetchIndicator('getExpirationSummary', 'line', 'Expiration Summary', dispatch);
-    fetchIndicator('getInventorySummary', 'horizontalBar', 'Inventory Summary', dispatch);
-    fetchIndicator('getFillRate', 'line', 'Fill Rate', dispatch);
-    fetchIndicator('getSentStockMovements', 'bar', 'Sent Stock Movements', dispatch);
-    fetchIndicator('getReceivedStockMovements', 'doughnut', 'Stock Movements Received', dispatch);
-    fetchIndicator('getOutgoingStock', 'numbers', 'Outgoing Stock Movements', dispatch);
+    for (let i = 0; i < 6; i++) {
+      fetchIndicator(i, dispatch, null);
+    }
   };
 }
 

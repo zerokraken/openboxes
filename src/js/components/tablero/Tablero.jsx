@@ -3,7 +3,7 @@ import { defaults } from 'react-chartjs-2';
 import { connect } from 'react-redux';
 import { SortableContainer } from 'react-sortable-hoc';
 import 'react-table/react-table.css';
-import { addToIndicators, fetchIndicators, reorderIndicators } from '../../actions';
+import { addToIndicators, fetchIndicators, reorderIndicators, reloadIndicator } from '../../actions';
 import apiClient from '../../utils/apiClient';
 import GraphCard from './GraphCard';
 import LoadingNumbers from './LoadingNumbers';
@@ -15,16 +15,19 @@ import UnarchiveIndicator from './UnarchivePopout';
 defaults.global.legend = false;
 Chart.defaults.scale.ticks.beginAtZero = true;
 
-const SortableCards = SortableContainer(({ data }) => (
+const SortableCards = SortableContainer(({ data, reloadIndicator }) => (
   <div className="cardComponent">
     {data.map((value, index) =>
       (value.archived ? null : (
         <GraphCard
           key={`item-${value.id}`}
           index={index}
+          cardId={value.id}
           cardTitle={value.title}
           cardType={value.type}
+          cardLink={value.link}
           data={value.data}
+          reloadIndicator={reloadIndicator}
         />
       )))}
   </div>
@@ -41,6 +44,7 @@ const NumberCardsRow = ({ data }) => {
             cardTitle={value.title}
             cardNumber={value.number}
             cardSubtitle={value.subtitle}
+            cardLink={value.url}
           />
         ))}
       </div>
@@ -76,8 +80,8 @@ class Tablero extends Component {
   }
 
   fetchNumbersData() {
-    const url = "/openboxes/apitablero/getNumberData";
-    apiClient.get(url).then(res => {
+    const url = '/openboxes/apitablero/getNumberData';
+    apiClient.get(url).then((res) => {
       this.setState({ numberData: res.data });
     });
   }
@@ -116,6 +120,7 @@ class Tablero extends Component {
           data={this.props.indicatorsData}
           onSortStart={this.sortStartHandle}
           onSortEnd={this.sortEndHandle}
+          reloadIndicator={this.props.reloadIndicator}
           axis="xy"
           useDragHandle
         />
@@ -132,11 +137,12 @@ class Tablero extends Component {
 }
 
 const mapStateToProps = state => ({
-  indicatorsData: state.indicators.data
+  indicatorsData: state.indicators.data,
 });
 
 export default connect(mapStateToProps, {
   fetchIndicators,
+  reloadIndicator,
   addToIndicators,
   reorderIndicators,
 })(Tablero);
