@@ -106,16 +106,17 @@ export function changeCurrentLocale(locale) {
 
 // New Dashboard
 
-function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle, link = null, id = null) {
+function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle, link = null, id = null, params = null) {
   let archived = 0;
   id = id ? id : Math.random();
 
-  const url = "/openboxes/apitablero/" + indicatorMethod;
+  const url = `/openboxes/apitablero/${indicatorMethod}?${params}`;
 
   dispatch({
     type: FETCH_INDICATORS,
     payload: {
       id,
+      method: indicatorMethod,
       title: indicatorTitle,
       type: 'loading',
       data: [],
@@ -129,6 +130,7 @@ function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle
       type: FETCH_INDICATORS,
       payload: {
         id,
+        method: indicatorMethod,
         title: indicatorTitle,
         type: indicatorType,
         data: res.data,
@@ -141,6 +143,7 @@ function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle
       type: FETCH_INDICATORS,
       payload: {
         id,
+        method: indicatorMethod,
         title: indicatorTitle,
         type: 'error',
         data: [],
@@ -151,12 +154,18 @@ function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle
   });
 }
 
+export function reloadIndicator(method, type, title, link, id, params) {
+  return (dispatch) => {
+    fetchIndicator(dispatch, method, type, title, link, id, params);
+  };
+}
+
 export function fetchIndicators() {
   return (dispatch) => {
     fetchIndicator(dispatch, 'getExpirationSummary', 'line', 'Expiration Summary');
     fetchIndicator(dispatch, 'getInventorySummary', 'horizontalBar', 'Inventory Summary');
     fetchIndicator(dispatch, 'getFillRate', 'line', 'Fill Rate');
-    fetchIndicator(dispatch, 'getSentStockMovements', 'bar', 'Sent Stock Movements');
+    fetchIndicator(dispatch, 'getSentStockMovements', 'bar', 'Stock Movements Sent by Month');
     fetchIndicator(dispatch, 'getReceivedStockMovements', 'doughnut', 'Stock Movements Received');
     fetchIndicator(dispatch, 'getOutgoingStock', 'numbers', 'Outgoing Stock Movements');
   };

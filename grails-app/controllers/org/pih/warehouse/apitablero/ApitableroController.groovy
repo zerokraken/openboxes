@@ -35,7 +35,7 @@ def getInventorySummary = {
 }
 
 def getSentStockMovements = {
-    render indicatorDataService.getSentStockMovements(location)["data"].toJson() as JSON
+    render indicatorDataService.getSentStockMovements(location, params)["data"].toJson() as JSON
 }
 
 def getReceivedStockMovements = {
