@@ -5,14 +5,11 @@ class IndicatorDatasets implements Serializable {
     
     String label;
     List<Integer> data;
-    Boolean fill;
     String type;
 
-    IndicatorDatasets(String label, List<Integer> data, Boolean fill = false, String type = null) 
-    {
+    IndicatorDatasets(String label, List<Integer> data, String type = null) {
         this.label = label;
         this.data = data;
-        this.fill = fill;  
         this.type = type;
     }
 
@@ -20,8 +17,7 @@ class IndicatorDatasets implements Serializable {
         [
                 "label"        : label,
                 "data"         : data,
-                "fill"         : fill,
-                "type"         : type,
+                "type"         : type
         ]
     }
 }

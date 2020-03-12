@@ -106,9 +106,10 @@ export function changeCurrentLocale(locale) {
 
 // New Dashboard
 
-function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle, link = null, id = null, params = null) {
-  let archived = 0;
-  id = id ? id : Math.random();
+// eslint-disable-next-line max-len
+function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle, link = null, indicatorId = null, params = null) {
+  const archived = 0;
+  const id = indicatorId || Math.random();
 
   const url = `/openboxes/apitablero/${indicatorMethod}?${params}`;
 
@@ -121,7 +122,7 @@ function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle
       type: 'loading',
       data: [],
       archived,
-      link
+      link,
     },
   });
 
@@ -135,7 +136,7 @@ function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle
         type: indicatorType,
         data: res.data,
         archived,
-        link
+        link,
       },
     });
   }, () => {
@@ -148,7 +149,7 @@ function fetchIndicator(dispatch, indicatorMethod, indicatorType, indicatorTitle
         type: 'error',
         data: [],
         archived,
-        link
+        link,
       },
     });
   });
@@ -163,8 +164,8 @@ export function reloadIndicator(method, type, title, link, id, params) {
 export function fetchIndicators() {
   return (dispatch) => {
     fetchIndicator(dispatch, 'getExpirationSummary', 'line', 'Expiration Summary');
+    fetchIndicator(dispatch, 'getFillRate', 'bar', 'Fill Rate');
     fetchIndicator(dispatch, 'getInventorySummary', 'horizontalBar', 'Inventory Summary');
-    fetchIndicator(dispatch, 'getFillRate', 'line', 'Fill Rate');
     fetchIndicator(dispatch, 'getSentStockMovements', 'bar', 'Stock Movements Sent by Month');
     fetchIndicator(dispatch, 'getReceivedStockMovements', 'doughnut', 'Stock Movements Received');
     fetchIndicator(dispatch, 'getOutgoingStock', 'numbers', 'Outgoing Stock Movements');
