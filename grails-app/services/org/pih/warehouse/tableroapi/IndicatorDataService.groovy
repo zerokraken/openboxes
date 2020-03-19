@@ -6,7 +6,7 @@ import org.pih.warehouse.tablero.IndicatorData
 import org.pih.warehouse.tablero.NumberIndicator
 import org.pih.warehouse.requisition.Requisition
 import org.pih.warehouse.shipping.Shipment
-
+import org.pih.warehouse.core.Location
 import org.pih.warehouse.tablero.IndicatorDatasets
 
 class IndicatorDataService {
@@ -110,46 +110,47 @@ class IndicatorDataService {
         return indicatorData;
     }
 
-DataGraph getSentStockMovements(def location, def params) {
-    Integer querySize = params.querySize? params.querySize.toInteger() : 5
-    List allLocations = dataService.executeQuery("select id from location")
-    List listDatasets = []
-    List listLabel = []
-    today.clearTime()
-    // Query data for all locations
-    for(item in allLocations) {
-        List listData = []
-        listLabel = []
-        try {
-            List locationName = dataService.executeQuery("select name from location where id=" + item[0].value)
-            // querySize is the quantity of months in the filter : until which month query data
-            for(int i = querySize; i >= 0; i--) {
-                def monthBegin = today.clone()
-                def monthEnd = today.clone()
-                monthBegin.set(month: today.month - i, date: 1)
-                monthEnd.set(month: today.month - i + 1, date: 1)
+    DataGraph getSentStockMovements(def location, def params) {
+        Integer querySize = params.querySize? params.querySize.toInteger() : 5
+        today.clearTime()
 
-                def query = Shipment.executeQuery("select count(*) from Shipment s where s.lastUpdated >= :monthOne and s.lastUpdated < :monthTwo and s.origin = " + item[0].value + " and s.currentStatus <> 'PENDING'", 
-                // The column transaction_transaction_date doesn't exist, using lastUpdated instead
-                ['monthOne': monthBegin, 'monthTwo': monthEnd]);
-                String monthLabel = new java.text.DateFormatSymbols().months[monthBegin.month].substring(0,3)
+        String query = "SELECT COUNT(s.id) as total, YEAR(s.last_updated) as year, s.destination_id as destination, MONTH(s.last_updated) as month FROM openboxes.shipment s WHERE origin_id = '" + location.id + "' AND s.current_status <> 'PENDING' GROUP BY MONTH(s.last_updated), s.destination_id, YEAR(s.last_updated)"
+        
+        List response = dataService.executeQuery(query)
+
+        List listRes = []
+        List listLabel = []
+
+        for(item in response) {
+            Location itemLocation = Location.get(item.destination)
+            Date month = today.clone()
+            List listData = []
+            listLabel = []
+
+            for(int i = querySize; i >= 0; i--) {
+                month.set(month: today.month - i, date: 1)
+
+                Integer value = 0
+                if (month.month == item.month-1 && month.year + 1900 == item.year) {
+                    value = item.total
+                }
+
+                String monthLabel = new java.text.DateFormatSymbols().months[month.month].substring(0,3)
 
                 listLabel.push(monthLabel)
-                listData.push(query[0])
+                listData.push(value)
             }
-            listDatasets.push(new IndicatorDatasets(locationName[0].name, listData))
-        } catch(err) {
-            log.error "Query error in getSentStockMovements : " + err
+            listRes.push(new IndicatorDatasets(itemLocation.name, listData))
         }
+
+        List<IndicatorDatasets> datasets = listRes;
+
+        IndicatorData data = new IndicatorData(datasets, listLabel);
+
+        DataGraph indicatorData = new DataGraph(data, 1, "Stock Movements Sent by Month", "bar");
+
+        return indicatorData;
     }
-    List<IndicatorDatasets> datasets = listDatasets;
-
-    IndicatorData data = new IndicatorData(datasets, listLabel);
-
-    DataGraph indicatorData = new DataGraph(data, 1, "Stock Movements Sent by Month", "bar");
-
-    return indicatorData;
-}
 
     DataGraph getReceivedStockData(def location) {
         List listData = []
