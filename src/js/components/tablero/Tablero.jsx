@@ -168,7 +168,7 @@ export default connect(mapStateToProps, {
 
 Tablero.defaultProps = {
   currentLocation: null,
-  indicatorsData: null,
+  indicatorsData: [],
   numberData: [],
 };
 
