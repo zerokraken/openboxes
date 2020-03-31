@@ -36,9 +36,6 @@ const initialState = {
 export default function (state = initialState, action) {
   switch (action.type) {
     case FETCH_INDICATORS: {
-      if (!action.payload) {
-        return initialState;
-      }
       // new reference to array so the component is re-rendered when value changes
       const newState = [].concat(state.data);
       const index = findInArray(action.payload.id, state.data);
@@ -54,7 +51,7 @@ export default function (state = initialState, action) {
     }
     case RESET_INDICATORS:
       return {
-        initialState,
+        ...initialState,
       };
     case REORDER_INDICATORS:
       return {
