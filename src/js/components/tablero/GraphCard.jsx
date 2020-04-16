@@ -72,7 +72,7 @@ const GraphCard = SortableElement(({
             className={filter ? 'customSelect' : 'customSelect disabled'}
             onChange={e => reloadIndicator(cardMethod, cardType, cardTitle, cardLink, cardId, `querySize=${e.target.value}`)}
             disabled={!filter}
-            defaultValue="6"
+            defaultValue={data.labels ? data.labels.length : '6'}
           >
             <option value="1">{label} Month</option>
             <option value="3">{label} 3 Months</option>
