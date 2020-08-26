@@ -1139,4 +1139,126 @@ class ProductService {
         }
         return results
     }
+
+    // Potential approaches to this feature/task (Epic structure)
+    // 1. "We entirely trust users" => task 2 + task 6 + task 4 as basic logging into console
+    // 2. "We do not trust users at all, hence we want log everything they do" => task 2 + task 6 + task 4 as proper logging table
+    // 3. "Option 2 plus easy reinstating option" => task 2 + task 4 (table) + task 5 + task 6
+    // 4. "Full automation" => task 1 + task 2 + task 3 + task 4 + task 5 + task 7
+    // 5. "Full automation plus user" => tasks from option 4 + task 6
+
+
+    // TODO task 1.: Algorithm for deciding which product will stay and which should be deactivated
+    // TODO task 2.: Replacing duplicated product with a primary one for given pairs
+    // TODO task 3.: Replacing duplicated product with a primary one for given list of pairs
+    // TODO task 4.: Proper logging mechanism
+    // TODO task 5.: Restoring initial version
+    // TODO task 6.: Place on the front end where the user could manualy trigger merging process for products
+    // TODO task 7.: Job for duplicates detection
+
+    // POTENTIAL ISSUES:
+    //  1. What in case if there was no enough of physical quantity of primary product during movements
+    //     in inventory for reassigning primary product to historical movements?
+    //  2. What if inventory item for duplicate product has same lotNumber as InvItem for primary product? Does it impact other relations?
+    //     Or we just can ignore it and use the InventoryItem from primary Product and the swap InventoryItems on it's related objects?
+
+    /**    (TASK 4)
+     * Merge logger domain - table example
+     * */
+    class DuplicatesMergeLogger {
+        String id
+        Date created_at // date performed
+        Product primaryProduct
+        Product duplicateProduct
+        String log // longblob, will store ids of objects, for which the products were swapped
+                   // should have defined structure, for example: Object1Name:Object1Id1,Object1Id2;Object2Name:Object2Id1
+        Date reinstated_at // if changes were undone, then this date will be set otherwise NULL
+    }
+
+    /**  (TASK 1)
+     * Returns list of products and its duplicates.
+     * Returns: list of maps with this structure: [ [ primaryProductId: xyz123, duplicatedProductId: abc12 ], [...], ... ]
+     */
+    List<Map> findProductDuplicates() {
+        // TODO. 1.1: Select potential duplicated products
+        // find duplicated products by name, version and active
+        // example sql query "SELECT p.id, p.name, p.product_code FROM product as p where name in (
+        //   SELECT p.name FROM product as p GROUP BY p.name, p.active, p.version HAVING COUNT(*) > 1
+        // ) ORDER BY p.name;"
+        def listOfDuplicatedProducts = []
+
+        def listOfProductPairs = [[:]]
+        // TODO. 1.2: Decide which products are primary and which is truly a duplicate
+        // Potential options for deciding which product is winner:
+        //   1. Compare non date fields and if everything is equal, then pick by newest last_updated (or created_at)
+        //   2. Compare total product_demand for both products (the one with biggest demand wins)
+        //   3. Compare amount of InventoryItems (the one with biggest number wins)
+        // NOTE: Remember that one product can have multiple duplicates, then each duplicate product should have the same primary product
+        //       and each pair should be added to the list.
+
+        return listOfProductPairs
+    }
+
+    /**  (TASK 2)
+     * Preforms product swapping for a product pairs passed as params
+     * */
+    def mergeDuplicatedProducts(Product primary, Product duplicate) {
+        // TODO 2.1.: SET PRODUCTS ON PROPER RELATIONS TO THE NEW PRODUCT
+        // TODO 3.1.: Log list of relations and its ids where product was replaced
+
+        // === Product's relations ===
+        // - ProductAssociation <-- swap only associations that does not exist for primary product
+        // - ProductComponent <-- swap only components that does not exist for primary product
+        // - InventoryItem <-- find inventory items and replace product only for InventoryItems with lotNumber that are not exisitng for primary product
+        //                     But if we're gonna use the InventoryItem from primary Product, then duplicated InventoryItem relations should be updated accordingly.
+        //                     (ShipmentItems, TransactionEntries and so on)
+        // - ProductAvailability <-- can be swapped for InventoryItems that were updated in above check
+        // - ProductPackage <-- compare products packages for both items and replace product only for the package that is not available for primary
+        // - ProductSupplier <-- probably same case as ProductPackage
+        // - Synonym <-- if the same synonym does not exist on primary product, then can be swapped
+
+        // - RequisitionItem <-- probably can be swapped, but watch out for InventoryItems (in case the there is existing one on primary product)
+        // - ShipmentItem <-- probably can be swapped, but watch out for InventoryItems (in case the there is existing one on primary product)
+        // - OrderItem <-- probably can be swapped, but watch out for InventoryItems (in case the there is existing one on primary product)
+        // - ReceiptItem <-- probably can be swapped, but watch out for InventoryItems (in case the there is existing one on primary product)
+        // - Document <-- probably can be swapped
+
+        // - TransactionEntry <-- probably can be swapped, but watch out for InventoryItems (in case the there is existing one on primary product)
+        // - InventorySnapshot <-- ? probably should be populated at the end ?
+        // - InventoryItemSnapshot <- was this populated so far (locally i have this table empty)
+
+        // - ProductSummary <-- probably can be ignored (not changed)
+        // - InventoryLevel <-- probably can be ignored (not changed)
+        // - Category <-- probably can be ignored (not changed)
+        // - ProductAttribute <-- probably can be ignored (not changed)
+        // - ProductCatalogItem <-- probably can be ignored (not changed)
+        // - ProductGroup <-- probably can be ignored (not changed)
+        // - Tag <-- probably can be ignored (not changed)
+
+        // TODO 2.2.: Deactivate duplicated product
+
+        // TODO: Trigger inventory snapshots for product (in every location?)
+        // TODO: Trigger refresh of product_demand, product_availability, product_summary views
+    }
+
+    /**   (TASK 3)
+     * Preforms product swapping for list of product pairs returned in findProductDuplicates()
+     * */
+    def mergeDuplicatedProducts(List duplicatedProducts) {
+        // TODO: for each pair in duplicatedProducts do mergeDuplicatedProducts(pair.primary, pair.duplicate)
+    }
+
+    /**   (TASK 5)
+     * Finds a merge log for given "duplicated" product and perform date,
+     * restores relations and sets reinstated date in the proper log
+     * */
+    def restoreProductDuplicates(Product product, Date date) {
+        // TODO 2.1.: SET PRODUCTS ON PROPER RELATIONS TO THE "DUPLICATED" PRODUCT
+        // TODO 3.1.: Log reinstated_date in the logger table
+
+        // TODO 2.2.: Reactivate duplicated product
+
+        // TODO: Trigger inventory snapshots
+        // TODO: Trigger refresh of product_demand, product_availability, product_summary views
+    }
 }
