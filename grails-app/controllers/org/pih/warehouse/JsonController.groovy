@@ -1335,6 +1335,12 @@ class JsonController {
             data = data.findAll { it.status == params.status }
         }
 
+        if (params.locationType) {
+            data = data.findAll { 
+                it?.binLocation?.locationType?.name?.toLowerCase() == params.locationType
+                }
+        }
+
         def hasRoleFinance = userService.hasRoleFinance(session?.user)
 
         // Flatten the data to make it easier to display
@@ -1356,9 +1362,11 @@ class JsonController {
                     quantity      : quantity,
                     unitCost      : unitCost,
                     totalValue    : totalValue,
-                    handlingIcons : it.product?.getHandlingIcons()
+                    handlingIcons : it.product?.getHandlingIcons(),
+                    locationType  : it?.binLocation?.locationType?.name?.toLowerCase(),
             ]
         }
+
         render(["aaData": data] as JSON)
     }
 

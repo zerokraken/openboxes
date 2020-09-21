@@ -40,6 +40,12 @@
                                     optionKey="status" optionValue="${{ it.label }}" value="${params.status}"
                                     noSelection="['':g.message(code:'default.all.label')]" data-placeholder=" " />
                             </div>
+                            <div class="filter-list-item">
+                                <label>${warehouse.message(code:'default.locationType.label')}</label>
+                                <g:select name="locationType" class="chzn-select-deselect" from="${locationTypes}"
+                                    optionKey="locationType" optionValue="${{ it.label }}" value="${params.locationType}"
+                                    noSelection="['':g.message(code:'default.all.label')]" data-placeholder=" " />
+                            </div>
                         </div>
                         <div class="buttons">
                             <button name="button" value="run" class="button">
@@ -147,6 +153,7 @@
                 console.log("server params ");
                 data.push({ name: "location.id", value: "${params?.location?.id}"});
                 data.push({ name: "status", value: "${params.status}"});
+                data.push({ name: "locationType", value: "${params.locationType}"});
             },
             "fnServerData": function ( sSource, aoData, fnCallback ) {
                 console.log("fnServerData", aoData);

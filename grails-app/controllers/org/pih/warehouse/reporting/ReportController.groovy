@@ -399,6 +399,12 @@ class ReportController {
             [status: status, label: label]
         }
 
+        List locationTypes = ["receiving"].collect { locationType ->
+            String messageCode = "locationType.${locationType}"
+            String label = messageService.getMessage(messageCode)
+            [locationType: locationType, label: label]
+        }
+
 
 
         try {
@@ -442,9 +448,10 @@ class ReportController {
 
         log.info("Show bin location report: " + (System.currentTimeMillis() - startTime) + " ms")
         [
-                location   : location,
-                elapsedTime: (System.currentTimeMillis() - startTime),
-                statuses   : statuses
+                location     : location,
+                elapsedTime  : (System.currentTimeMillis() - startTime),
+                statuses     : statuses,
+                locationTypes: locationTypes
         ]
 
     }

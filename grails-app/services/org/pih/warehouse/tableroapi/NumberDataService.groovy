@@ -49,7 +49,7 @@ class NumberDataService {
                         'locationType': Constants.RECEIVING_LOCATION_TYPE_ID,
                 ]);
 
-        return new NumberData("Products in Receiving Bin", receivingBin[0], "Products", "/openboxes/report/showBinLocationReport?status=inStock")
+        return new NumberData("Products in Receiving Bin", receivingBin[0], "Products", "/openboxes/report/showBinLocationReport?status=inStock&locationType=receiving")
     }
 
     NumberData getItemsInventoried(def location) {
